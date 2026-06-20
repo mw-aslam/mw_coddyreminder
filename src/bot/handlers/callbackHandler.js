@@ -93,11 +93,8 @@ async function handleCallbacks(ctx) {
       }
 
       const langNow = ctx.dbUser?.language || 'ru';
-      const msg = langNow === 'ru'
-          ? `✅ Авто-удаление установлено: ${minutes} мин`
-          : langNow === 'uz'
-          ? `✅ Avto-o'chirish: ${minutes} daqiqa`
-          : `✅ Auto-delete set to ${minutes} min`;
+      const minLabel = langNow === 'uz' ? 'daq' : langNow === 'en' ? 'min' : 'мин';
+      const msg = `✅ ${minutes} ${minLabel}`;
           
       await showSettingsMenu(ctx, langNow);
       await ctx.answerCbQuery(msg);

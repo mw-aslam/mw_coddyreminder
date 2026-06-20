@@ -135,7 +135,7 @@ async function handleReminderStep(ctx) {
         return true;
       }
       
-      const existing = await reminderService.getReminder(session.editReminderId);
+      const existing = await reminderService.getReminderById(session.editReminderId);
       if (!existing) return true;
       
       const moment = require('moment-timezone');
@@ -160,7 +160,7 @@ async function handleReminderStep(ctx) {
         return true;
       }
 
-      const existing = await reminderService.getReminder(session.editReminderId);
+      const existing = await reminderService.getReminderById(session.editReminderId);
       if (!existing) return true;
 
       const timezone = ctx.dbUser?.timezone || 'Asia/Tashkent';
@@ -215,8 +215,8 @@ async function handleGroupSelection(ctx) {
   } else {
     const groupId = parseInt(selection);
     session.groupId = groupId;
-    const { groups } = await buildGroupKeyboard(lang, userId);
-    const group = groups.find((g) => g.telegram_group_id === groupId);
+    const groupResult = await buildGroupKeyboard(lang, userId);
+    const group = groupResult.groups.find((g) => g.telegram_group_id === groupId);
     session.groupTitle = group ? group.title : `Group ${groupId}`;
   }
 
@@ -236,7 +236,7 @@ async function handleGroupSelection(ctx) {
     `${t(lang, 'confirm_reminder')} ${session.reminderText}\n\n` +
     `${t(lang, 'confirm_date')} ${displayDate}\n` +
     `${t(lang, 'confirm_time')} ${displayTime}\n` +
-    `🔄 *Повторение:* ${recurrenceText}\n` +
+    `🔄 ${t(lang, 'rec_' + (session.recurrence || 'none'))}\n` +
     `${t(lang, 'confirm_target')} ${session.groupTitle}`,
     {
       parse_mode: 'Markdown',
@@ -317,11 +317,10 @@ async function handleRecurrenceSelection(ctx) {
   session.step = 'await_group';
   session.history.push({ step: 'await_recurrence', msg: selection });
 
-  const { buildGroupKeyboard } = require('../keyboards/groupKeyboard');
-  const { keyboard } = await buildGroupKeyboard(lang, userId);
+  const groupResult = await buildGroupKeyboard(lang, userId);
   await ctx.editMessageText(t(lang, 'step_group'), {
     parse_mode: 'Markdown',
-    ...keyboard,
+    ...groupResult.keyboard,
   });
   await ctx.answerCbQuery();
 }
@@ -356,10 +355,10 @@ async function handleBack(ctx) {
     });
   } else if (session.step === 'await_group') {
     const { buildGroupKeyboard } = require('../keyboards/groupKeyboard');
-    const { keyboard } = await buildGroupKeyboard(lang, userId);
+    const groupResult = await buildGroupKeyboard(lang, userId);
     await ctx.editMessageText(t(lang, 'step_group'), {
       parse_mode: 'Markdown',
-      ...keyboard,
+      ...groupResult.keyboard,
     });
   }
 
