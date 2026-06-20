@@ -3,9 +3,8 @@ const { sendDueReminders } = require('../services/reminderService');
 const logger = require('../utils/logger');
 
 function startReminderJob(bot) {
-  // Run every minute to check for due reminders
-  const job = cron.schedule('* * * * *', async () => {
-    logger.debug('Checking for due reminders...');
+  // Run every 10 seconds for near-instant reminder delivery
+  const job = cron.schedule('* * * * * *', async () => {
     try {
       await sendDueReminders(bot);
     } catch (err) {
@@ -13,7 +12,7 @@ function startReminderJob(bot) {
     }
   });
 
-  logger.info('Reminder cron job started (runs every minute)');
+  logger.info('Reminder cron job started (runs every 10 seconds)');
   return job;
 }
 

@@ -82,18 +82,16 @@ function buildSettingsKeyboard(lang = 'ru') {
 }
 
 function buildAutoDeleteKeyboard(lang = 'ru') {
-  const minutes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   const minLabel = lang === 'uz' ? 'daq' : lang === 'en' ? 'min' : 'мин';
-  const rows = [];
-  for (let i = 0; i < minutes.length; i += 5) {
-    rows.push(
-      minutes.slice(i, i + 5).map(m =>
-        Markup.button.callback(`${m} ${minLabel}`, `set_autodelete:${m}`)
-      )
-    );
-  }
-  rows.push([Markup.button.callback(t(lang, 'btn_back') || '🔙 Назад', 'settings_back')]);
-  return Markup.inlineKeyboard(rows);
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(`1 ${minLabel}`, 'set_autodelete:1'),
+      Markup.button.callback(`5 ${minLabel}`, 'set_autodelete:5'),
+      Markup.button.callback(`10 ${minLabel}`, 'set_autodelete:10'),
+    ],
+    [Markup.button.callback(t(lang, 'btn_custom'), 'autodelete_custom')],
+    [Markup.button.callback(t(lang, 'btn_back'), 'settings_back')],
+  ]);
 }
 
 module.exports = {

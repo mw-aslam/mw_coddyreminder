@@ -184,6 +184,25 @@ async function handleReminderStep(ctx) {
       return true;
     }
 
+    case 'await_autodelete_custom': {
+      const minutes = parseInt(text);
+      if (isNaN(minutes) || minutes < 1 || minutes > 10080) {
+        await ctx.reply(t(lang, 'autodelete_invalid'));
+        return true;
+      }
+      const seconds = minutes * 60;
+      const userService = require('../services/userService');
+      const userMiddleware = require('../bot/middlewares/user');
+      await userService.updateSettings(userId, { auto_delete_duration: seconds });
+      if (ctx.dbUser) ctx.dbUser.auto_delete_duration = seconds;
+      if (userMiddleware.updateCache) {
+        userMiddleware.updateCache(userId, { auto_delete_duration: seconds });
+      }
+      clearSession(userId);
+      await ctx.reply(t(lang, 'autodelete_set', { min: minutes }), { parse_mode: 'Markdown' });
+      return true;
+    }
+
     default:
       return false;
   }

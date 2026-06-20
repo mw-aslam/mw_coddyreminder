@@ -77,4 +77,8 @@ module.exports = {
   error_not_found: "Напоминание не найдено.",
   error_occurred: "Произошла ошибка.",
   remind_usage: "Использование: `/remind ЧЧ:ММ Текст`",
+  autodelete_custom_prompt: "⏱ *Своё время*\n\nЧерез сколько минут удалять? (введите число, например: `15`)",
+  autodelete_set: "✅ Авто-удаление: *{min} мин*",
+  btn_custom: "✏️ Своё время",
+  autodelete_invalid: "Укажите число от 1 до 10080 (макс 1 неделя).",
 };

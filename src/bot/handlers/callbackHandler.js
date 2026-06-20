@@ -107,6 +107,19 @@ async function handleCallbacks(ctx) {
       return;
     }
 
+    if (data === 'autodelete_custom') {
+      const { buildAutoDeleteKeyboard } = require('../../keyboards/groupKeyboard');
+      // Set session to wait for custom input
+      const session = reminderHandler.getSession(ctx.from.id);
+      session.step = 'await_autodelete_custom';
+      await ctx.editMessageText(t(lang, 'autodelete_custom_prompt'), {
+        parse_mode: 'Markdown',
+        ...require('../../keyboards/groupKeyboard').buildAutoDeleteKeyboard(lang)
+      });
+      await ctx.answerCbQuery();
+      return;
+    }
+
     if (data.startsWith('settings:')) {
       await handleSettingsAction(ctx, data.split(':')[1], lang);
       return;

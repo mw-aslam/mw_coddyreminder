@@ -77,4 +77,8 @@ module.exports = {
   error_not_found: "Eslatma topilmadi.",
   error_occurred: "Xatolik yuz berdi.",
   remind_usage: "Qo'llash: `/remind HH:MM Matn`",
+  autodelete_custom_prompt: "⏱ *O'z vaqtingizni kiriting*\n\nNecha daqiqadan so'ng o'chirilsin? (raqam kiriting, masalan: `15`)",
+  autodelete_set: "✅ Avto-o'chirish: *{min} daqiqa*",
+  btn_custom: "✏️ O'z vaqtim",
+  autodelete_invalid: "1 dan 10080 gacha raqam kiriting (max 1 hafta).",
 };

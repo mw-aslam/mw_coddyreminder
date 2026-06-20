@@ -77,4 +77,8 @@ module.exports = {
   error_not_found: "Reminder not found.",
   error_occurred: "An error occurred.",
   remind_usage: "Usage: `/remind HH:MM Text`",
+  autodelete_custom_prompt: "⏱ *Custom duration*\n\nAfter how many minutes should reminders be deleted? (enter a number, e.g. `15`)",
+  autodelete_set: "✅ Auto-delete: *{min} min*",
+  btn_custom: "✏️ Custom",
+  autodelete_invalid: "Enter a number between 1 and 10080 (max 1 week).",
 };

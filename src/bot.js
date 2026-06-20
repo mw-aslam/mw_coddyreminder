@@ -22,36 +22,26 @@ function createBot() {
   // Cache for group memberships to prevent DB queries on every message
   const groupMembershipCache = new Set();
 
-  // Auto-track user-group memberships: whenever a user interacts in a group, save it
+  // Auto-track user-group memberships & block group usage
   bot.use(async (ctx, next) => {
+    // Only process group-related tracking if not a private chat
     if (ctx.from && ctx.chat && ctx.chat.type !== 'private') {
       const userId = ctx.from.id;
       const groupId = ctx.chat.id;
       const cacheKey = `${userId}:${groupId}`;
 
+      // Track membership in background (cached)
       if (groupId < 0 && !groupMembershipCache.has(cacheKey)) {
-        try {
-          const existing = await groupRepository.getGroupById(groupId);
-          if (existing) {
-            await groupService.addUserToGroup(userId, groupId);
-            groupMembershipCache.add(cacheKey); // Only add to cache if successful
-          }
-        } catch (e) {
-          // silently skip
-        }
+        groupMembershipCache.add(cacheKey);
+        groupRepository.getGroupById(groupId).then(existing => {
+          if (existing) groupService.addUserToGroup(userId, groupId).catch(() => {});
+        }).catch(() => {});
       }
-      
-      // Bot does NOT respond to anything in groups — only private chat
-      // (except my_chat_member which is handled separately below)
-      if (ctx.updateType !== 'my_chat_member' && ctx.updateType !== 'message') {
-        // if it's not a message and not my_chat_member, maybe callback? let it pass if needed, but we ignore group stuff mostly
-      }
-      if (ctx.updateType !== 'my_chat_member' && ctx.updateType !== 'callback_query') {
-        if (!ctx.message || !ctx.message.text || !ctx.message.text.startsWith('/remind')) {
-          return;
-        }
-      }
+
+      // Only allow my_chat_member events from groups (bot added/removed)
+      if (ctx.updateType !== 'my_chat_member') return;
     }
+
     return next();
   });
 
