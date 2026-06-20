@@ -1,0 +1,1 @@
+ALTER TABLE reminders ADD COLUMN IF NOT EXISTS recurrence VARCHAR(50) DEFAULT 'none';
