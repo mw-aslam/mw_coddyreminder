@@ -70,6 +70,12 @@ async function handleCallbacks(ctx) {
       const newLang = data.split(':')[1];
       await userService.updateSettings(ctx.from.id, { language: newLang });
       if (ctx.dbUser) ctx.dbUser.language = newLang;
+      
+      const userMiddleware = require('../middlewares/user');
+      if (userMiddleware.updateCache) {
+        userMiddleware.updateCache(ctx.from.id, { language: newLang });
+      }
+
       await showSettingsMenu(ctx, newLang);
       await ctx.answerCbQuery(t(newLang, 'settings_lang_updated'));
       return;
@@ -80,6 +86,11 @@ async function handleCallbacks(ctx) {
       const seconds = minutes * 60;
       await userService.updateSettings(ctx.from.id, { auto_delete_duration: seconds });
       if (ctx.dbUser) ctx.dbUser.auto_delete_duration = seconds;
+
+      const userMiddleware = require('../middlewares/user');
+      if (userMiddleware.updateCache) {
+        userMiddleware.updateCache(ctx.from.id, { auto_delete_duration: seconds });
+      }
 
       const langNow = ctx.dbUser?.language || 'ru';
       const msg = langNow === 'ru'
