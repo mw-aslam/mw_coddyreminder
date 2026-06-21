@@ -24,6 +24,28 @@ const poolConfig = config.database.connectionString
 
 const pool = new Pool(poolConfig);
 
+function getDatabaseConnectionHint(err) {
+  const message = err?.message || '';
+
+  if (message.includes('tenant/user') && message.includes('not found')) {
+    return 'Supabase pooler tenant/user not found. Use the Session pooler connection string from Supabase Dashboard; the username must be postgres.<PROJECT-REF> and the pooler region must match the project.';
+  }
+
+  if (err?.code === 'ENOTFOUND') {
+    return 'Database host was not resolved by Node. Supabase direct db.<PROJECT-REF>.supabase.co endpoints are IPv6-only unless the IPv4 add-on is enabled; use the shared pooler for local IPv4 networks.';
+  }
+
+  if (err?.code === 'ENETUNREACH') {
+    return 'Database host resolved to IPv6, but this machine has no IPv6 route. Use the Supabase shared pooler or enable the IPv4 add-on.';
+  }
+
+  if (/password authentication failed/i.test(message)) {
+    return 'Database password is incorrect. Reset or copy the database password from Supabase settings.';
+  }
+
+  return 'Please check DATABASE_URL or the DB_* settings.';
+}
+
 pool.on('connect', () => {
   logger.debug('New database connection established');
 });
@@ -55,7 +77,7 @@ async function testConnection() {
     logger.info('Database connection successful:', result.rows[0].now);
     return true;
   } catch (err) {
-    logger.error('Database connection failed:', err);
+    logger.error(`Database connection failed: ${getDatabaseConnectionHint(err)}`);
     return false;
   }
 }

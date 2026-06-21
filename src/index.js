@@ -16,8 +16,8 @@ async function main() {
   // Test DB connection
   const dbOk = await testConnection();
   if (!dbOk) {
-    logger.error('Database connection failed. Please check your DATABASE_URL or DB_* settings.');
-    logger.error('Run: npm run migrate  to initialize the database schema.');
+    logger.error('Database connection failed. Fix DATABASE_URL or DB_* settings first.');
+    logger.error('After the connection works, run: npm run migrate');
     process.exit(1);
   }
 
