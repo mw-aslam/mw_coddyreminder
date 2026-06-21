@@ -1,7 +1,11 @@
-const { query } = require('../db');
+const { query, isJsonAdapter, localStore } = require('../db');
 const logger = require('../../utils/logger');
 
 async function upsertGroup({ telegramGroupId, title, username, addedBy }) {
+  if (isJsonAdapter) {
+    return localStore.upsertGroup({ telegramGroupId, title, username, addedBy });
+  }
+
   const sql = `
     INSERT INTO groups (telegram_group_id, title, username, added_by, is_active)
     VALUES ($1, $2, $3, $4, TRUE)
@@ -14,6 +18,10 @@ async function upsertGroup({ telegramGroupId, title, username, addedBy }) {
 }
 
 async function addUserToGroup(userId, groupId) {
+  if (isJsonAdapter) {
+    return localStore.addUserToGroup(userId, groupId);
+  }
+
   const sql = `
     INSERT INTO user_groups (user_id, group_id)
     VALUES ($1, $2)
@@ -23,6 +31,10 @@ async function addUserToGroup(userId, groupId) {
 }
 
 async function deactivateGroup(telegramGroupId) {
+  if (isJsonAdapter) {
+    return localStore.deactivateGroup(telegramGroupId);
+  }
+
   const sql = `
     UPDATE groups SET is_active = FALSE, updated_at = NOW()
     WHERE telegram_group_id = $1
@@ -33,6 +45,10 @@ async function deactivateGroup(telegramGroupId) {
 }
 
 async function getAllActiveGroups() {
+  if (isJsonAdapter) {
+    return localStore.getAllActiveGroups();
+  }
+
   const result = await query(
     'SELECT * FROM groups WHERE is_active = TRUE ORDER BY created_at DESC'
   );
@@ -40,6 +56,10 @@ async function getAllActiveGroups() {
 }
 
 async function getGroupById(telegramGroupId) {
+  if (isJsonAdapter) {
+    return localStore.getGroupById(telegramGroupId);
+  }
+
   const result = await query(
     'SELECT * FROM groups WHERE telegram_group_id = $1',
     [telegramGroupId]
@@ -48,6 +68,10 @@ async function getGroupById(telegramGroupId) {
 }
 
 async function getUserActiveGroups(userId) {
+  if (isJsonAdapter) {
+    return localStore.getUserActiveGroups(userId);
+  }
+
   // Show groups where:
   // 1) user is tracked in user_groups (new method), OR
   // 2) user was the one who added the bot (old fallback)

@@ -1,6 +1,10 @@
-const { query } = require('../db');
+const { query, isJsonAdapter, localStore } = require('../db');
 
 async function createReminder({ userId, groupId, text, remindAt, recurrence = 'none' }) {
+  if (isJsonAdapter) {
+    return localStore.createReminder({ userId, groupId, text, remindAt, recurrence });
+  }
+
   const sql = `
     INSERT INTO reminders (user_id, group_id, text, remind_at, recurrence, status)
     VALUES ($1, $2, $3, $4, $5, 'pending')
@@ -11,6 +15,10 @@ async function createReminder({ userId, groupId, text, remindAt, recurrence = 'n
 }
 
 async function updateReminder(id, updates) {
+  if (isJsonAdapter) {
+    return localStore.updateReminder(id, updates);
+  }
+
   const fields = [];
   const values = [];
   let idx = 1;
@@ -36,6 +44,10 @@ async function updateReminder(id, updates) {
 }
 
 async function getPendingReminders() {
+  if (isJsonAdapter) {
+    return localStore.getPendingReminders();
+  }
+
   const sql = `
     SELECT r.*, g.title as group_title, g.telegram_group_id
     FROM reminders r
@@ -48,6 +60,10 @@ async function getPendingReminders() {
 }
 
 async function getUserReminders(userId, status = null) {
+  if (isJsonAdapter) {
+    return localStore.getUserReminders(userId, status);
+  }
+
   let sql = `
     SELECT r.*, g.title as group_title
     FROM reminders r
@@ -69,6 +85,10 @@ async function getUserReminders(userId, status = null) {
 }
 
 async function getReminderById(id, userId = null) {
+  if (isJsonAdapter) {
+    return localStore.getReminderById(id, userId);
+  }
+
   let sql = `
     SELECT r.*, g.title as group_title
     FROM reminders r
@@ -87,6 +107,10 @@ async function getReminderById(id, userId = null) {
 }
 
 async function updateReminderStatus(id, status, sentMessageId = null) {
+  if (isJsonAdapter) {
+    return localStore.updateReminderStatus(id, status, sentMessageId);
+  }
+
   const sql = `
     UPDATE reminders
     SET status = $1, sent_message_id = COALESCE($2, sent_message_id), updated_at = NOW()
@@ -98,6 +122,10 @@ async function updateReminderStatus(id, status, sentMessageId = null) {
 }
 
 async function deleteReminder(id, userId) {
+  if (isJsonAdapter) {
+    return localStore.deleteReminder(id, userId);
+  }
+
   const sql = `
     UPDATE reminders SET status = 'deleted', updated_at = NOW()
     WHERE id = $1 AND user_id = $2 AND status = 'pending'

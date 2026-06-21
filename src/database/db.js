@@ -1,8 +1,11 @@
 const { Pool } = require('pg');
 const config = require('../config/config');
 const logger = require('../utils/logger');
+const localStore = require('./localStore');
 
-const poolConfig = config.database.connectionString
+const isJsonAdapter = config.database.adapter === 'json';
+
+const poolConfig = !isJsonAdapter && config.database.connectionString
   ? {
       connectionString: config.database.connectionString,
       ssl: config.database.ssl,
@@ -22,7 +25,11 @@ const poolConfig = config.database.connectionString
       connectionTimeoutMillis: config.database.connectionTimeoutMillis,
     };
 
-const pool = new Pool(poolConfig);
+const pool = isJsonAdapter
+  ? {
+      end: async () => {},
+    }
+  : new Pool(poolConfig);
 
 function getDatabaseConnectionHint(err) {
   const message = err?.message || '';
@@ -46,15 +53,21 @@ function getDatabaseConnectionHint(err) {
   return 'Please check DATABASE_URL or the DB_* settings.';
 }
 
-pool.on('connect', () => {
-  logger.debug('New database connection established');
-});
+if (!isJsonAdapter) {
+  pool.on('connect', () => {
+    logger.debug('New database connection established');
+  });
 
-pool.on('error', (err) => {
-  logger.error('Unexpected database pool error:', err);
-});
+  pool.on('error', (err) => {
+    logger.error('Unexpected database pool error:', err);
+  });
+}
 
 async function query(text, params) {
+  if (isJsonAdapter) {
+    throw new Error('SQL query called while DB_ADAPTER=json. Use localStore repository methods instead.');
+  }
+
   const start = Date.now();
   try {
     const result = await pool.query(text, params);
@@ -68,10 +81,20 @@ async function query(text, params) {
 }
 
 async function getClient() {
+  if (isJsonAdapter) {
+    throw new Error('PostgreSQL clients are not available while DB_ADAPTER=json.');
+  }
+
   return pool.connect();
 }
 
 async function testConnection() {
+  if (isJsonAdapter) {
+    await localStore.testConnection();
+    logger.info(`Local JSON database ready: ${localStore.databasePath}`);
+    return true;
+  }
+
   try {
     const result = await query('SELECT NOW()');
     logger.info('Database connection successful:', result.rows[0].now);
@@ -82,4 +105,4 @@ async function testConnection() {
   }
 }
 
-module.exports = { query, getClient, pool, testConnection };
+module.exports = { query, getClient, pool, testConnection, isJsonAdapter, localStore };

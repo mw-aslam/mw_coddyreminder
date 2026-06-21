@@ -1,7 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { query, testConnection } = require('./db');
+const { query, testConnection, isJsonAdapter } = require('./db');
 const logger = require('../utils/logger');
 
 async function migrate() {
@@ -11,6 +11,11 @@ async function migrate() {
   if (!connected) {
     logger.error('Cannot connect to database. Exiting.');
     process.exit(1);
+  }
+
+  if (isJsonAdapter) {
+    logger.info('Local JSON database does not require SQL migrations.');
+    process.exit(0);
   }
 
   const schemaPath = path.join(__dirname, '../../schema.sql');

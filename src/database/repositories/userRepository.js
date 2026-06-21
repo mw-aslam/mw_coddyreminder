@@ -1,6 +1,10 @@
-const { query } = require('../db');
+const { query, isJsonAdapter, localStore } = require('../db');
 
 async function upsertUser({ telegramUserId, username, firstName, lastName }) {
+  if (isJsonAdapter) {
+    return localStore.upsertUser({ telegramUserId, username, firstName, lastName });
+  }
+
   const sql = `
     INSERT INTO users (telegram_user_id, username, first_name, last_name, language, timezone)
     VALUES ($1, $2, $3, $4, 'ru', 'Asia/Tashkent')
@@ -13,6 +17,10 @@ async function upsertUser({ telegramUserId, username, firstName, lastName }) {
 }
 
 async function getUserById(telegramUserId) {
+  if (isJsonAdapter) {
+    return localStore.getUserById(telegramUserId);
+  }
+
   const result = await query(
     'SELECT * FROM users WHERE telegram_user_id = $1',
     [telegramUserId]
@@ -21,6 +29,10 @@ async function getUserById(telegramUserId) {
 }
 
 async function updateUserSettings(telegramUserId, settings) {
+  if (isJsonAdapter) {
+    return localStore.updateUserSettings(telegramUserId, settings);
+  }
+
   const fields = [];
   const values = [];
   let idx = 1;

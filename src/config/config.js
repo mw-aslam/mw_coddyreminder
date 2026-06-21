@@ -5,6 +5,7 @@ const config = {
     token: process.env.BOT_TOKEN,
   },
   database: {
+    adapter: process.env.DB_ADAPTER || 'postgres',
     connectionString: process.env.DATABASE_URL,
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT) || 5432,
@@ -15,6 +16,7 @@ const config = {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
+    jsonPath: process.env.JSON_DB_PATH || 'data/database.json',
   },
   app: {
     nodeEnv: process.env.NODE_ENV || 'development',
